@@ -170,7 +170,7 @@ func (c *BotClient) Upscale(index uint8, messageId, customId string) (int, []byt
 		SessionId:     generateSessionId(16),
 		Data: UpscaleData{
 			ComponentType: 2,
-			CustomId:      fmt.Sprintf("MJ::JOB::upsample::%d::%s", index, customId),
+			CustomId:      customId,
 		},
 	}
 
@@ -192,7 +192,7 @@ func (c *BotClient) Variation(index uint8, messageId, customId string) (int, []b
 		SessionId:     generateSessionId(16),
 		Data: UpscaleData{
 			ComponentType: 2,
-			CustomId:      fmt.Sprintf("MJ::JOB::variation::%d::%s", index, customId),
+			CustomId:      customId,
 		},
 	}
 
@@ -214,7 +214,7 @@ func (c *BotClient) Reset(messageId, customId string) (int, []byte, error) {
 		SessionId:     generateSessionId(16),
 		Data: UpscaleData{
 			ComponentType: 2,
-			CustomId:      fmt.Sprintf("MJ::JOB::reroll::0::%s::SOLO", customId),
+			CustomId:      customId,
 		},
 	}
 
