@@ -89,9 +89,10 @@ func (c *BotClient) handleMessage(s *discordgo.Session, m *discordgo.MessageCrea
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-
 	handler := c.messageHandlers
-	handler(m)
+	if handler != nil {
+		handler(m)
+	}
 }
 
 func (c *BotClient) OnMessage(handleFunc EventHandleFunc) {
