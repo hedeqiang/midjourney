@@ -40,18 +40,24 @@ type BotClient struct {
 	messageHandlers EventHandleFunc
 }
 
+var botClient *BotClient
+
 // NewClient creates a new BotClient and connects it to Discord.
 func NewClient(options *ClientOptions) (*BotClient, error) {
-	client := &BotClient{
+	botClient = &BotClient{
 		options: options,
 	}
 
-	err := client.Connect()
+	err := botClient.Connect()
 	if err != nil {
 		return nil, err
 	}
 
-	return client, nil
+	return botClient, nil
+}
+
+func GetBotClient() *BotClient {
+	return botClient
 }
 
 // Connect establishes a connection to Discord and sets up the message event handler.
