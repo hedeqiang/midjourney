@@ -108,7 +108,7 @@ func (c *BotClient) SendMessage(channelID, message string) (*discordgo.Message, 
 }
 
 // GenerateImage GenerateImage
-func (c *BotClient) GenerateImage(prompt string) error {
+func (c *BotClient) GenerateImage(prompt string) (int, []byte, error) {
 	payload := Payload{
 		Type:          2,
 		ApplicationID: c.options.ApplicationId,
@@ -152,14 +152,13 @@ func (c *BotClient) GenerateImage(prompt string) error {
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
-	_, err = c.DoHTTPRequest(jsonPayload)
+	return c.DoHTTPRequest(jsonPayload)
 
-	return err
 }
 
-func (c *BotClient) Upscale(index uint8, messageId, customId string) error {
+func (c *BotClient) Upscale(index uint8, messageId, customId string) (int, []byte, error) {
 	payload := UpscalePayload{
 		Type:          3,
 		GuildId:       c.options.GuildId,
@@ -176,14 +175,12 @@ func (c *BotClient) Upscale(index uint8, messageId, customId string) error {
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
-	_, err = c.DoHTTPRequest(jsonPayload)
-
-	return err
+	return c.DoHTTPRequest(jsonPayload)
 }
 
-func (c *BotClient) Variation(index uint8, messageId, customId string) error {
+func (c *BotClient) Variation(index uint8, messageId, customId string) (int, []byte, error) {
 	payload := UpscalePayload{
 		Type:          3,
 		GuildId:       c.options.GuildId,
@@ -200,14 +197,12 @@ func (c *BotClient) Variation(index uint8, messageId, customId string) error {
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
-	_, err = c.DoHTTPRequest(jsonPayload)
-
-	return err
+	return c.DoHTTPRequest(jsonPayload)
 }
 
-func (c *BotClient) Reset(messageId, customId string) error {
+func (c *BotClient) Reset(messageId, customId string) (int, []byte, error) {
 	payload := UpscalePayload{
 		Type:          3,
 		GuildId:       c.options.GuildId,
@@ -224,20 +219,18 @@ func (c *BotClient) Reset(messageId, customId string) error {
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return 0, nil, err
 	}
-	_, err = c.DoHTTPRequest(jsonPayload)
-
-	return err
+	return c.DoHTTPRequest(jsonPayload)
 }
 
 // DoHTTPRequest makes a generic HTTP request and returns the response body as a string.
-func (c *BotClient) DoHTTPRequest(data []byte) ([]byte, error) {
+func (c *BotClient) DoHTTPRequest(data []byte) (int, []byte, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("POST", baseURL, strings.NewReader(string(data)))
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	req.Header.Add("Authorization", c.options.AuthorizationToken)
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36")
@@ -245,16 +238,16 @@ func (c *BotClient) DoHTTPRequest(data []byte) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	return bodyBytes, nil
+	return resp.StatusCode, bodyBytes, nil
 }
 
 func generateSessionId(length int) string {
