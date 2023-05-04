@@ -52,10 +52,15 @@ client.GenerateImage("cat")
 
 ## Upscale
 ```go
-client.Upscale(2, "1099257364063985717", "3c6d3742-28bb-4354-a735-c815d82c4184")
+client.Upscale(index, message_id, custom_id)
 ```
 
-## Upscale
+## Variation
 ```go
-client.Reset("1099257364063985717", "3c6d3742-28bb-4354-a735-c815d82c4184")
+client.Variation(index, message_id, custom_id)
+```
+
+## Reset
+```go
+client.Reset(message_id, custom_id)
 ```
