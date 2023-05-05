@@ -57,3 +57,21 @@ type UpscaleData struct {
 	ComponentType int    `json:"component_type"`
 	CustomId      string `json:"custom_id"`
 }
+
+type Attachments struct {
+	Attachments []Attachment `json:"attachments"`
+}
+type Attachment struct {
+	Id             int    `json:"id"`
+	UploadUrl      string `json:"upload_url"`
+	UploadFilename string `json:"upload_filename"`
+}
+
+type Files struct {
+	Files []File `json:"files"`
+}
+type File struct {
+	Filename string `json:"filename"`
+	FileSize int64  `json:"file_size"`
+	Id       int    `json:"id"`
+}

@@ -155,7 +155,7 @@ func (c *BotClient) GenerateImage(prompt string) (int, []byte, error) {
 	if err != nil {
 		return 0, nil, err
 	}
-	return c.DoHTTPRequest(jsonPayload)
+	return c.DoHTTPRequest(http.MethodPost, baseURL, jsonPayload)
 
 }
 
@@ -178,7 +178,7 @@ func (c *BotClient) Upscale(index uint8, messageId, customId string) (int, []byt
 	if err != nil {
 		return 0, nil, err
 	}
-	return c.DoHTTPRequest(jsonPayload)
+	return c.DoHTTPRequest(http.MethodPost, baseURL, jsonPayload)
 }
 
 func (c *BotClient) Variation(index uint8, messageId, customId string) (int, []byte, error) {
@@ -200,7 +200,7 @@ func (c *BotClient) Variation(index uint8, messageId, customId string) (int, []b
 	if err != nil {
 		return 0, nil, err
 	}
-	return c.DoHTTPRequest(jsonPayload)
+	return c.DoHTTPRequest(http.MethodPost, baseURL, jsonPayload)
 }
 
 func (c *BotClient) Reset(messageId, customId string) (int, []byte, error) {
@@ -222,14 +222,57 @@ func (c *BotClient) Reset(messageId, customId string) (int, []byte, error) {
 	if err != nil {
 		return 0, nil, err
 	}
-	return c.DoHTTPRequest(jsonPayload)
+	return c.DoHTTPRequest(http.MethodPost, baseURL, jsonPayload)
+}
+
+func (c *BotClient) Blend(r *http.Request) error {
+	// 设置内存限制以防止大文件占用太多内存
+	err := r.ParseMultipartForm(32 << 20) // 32 MB
+	if err != nil {
+		return err
+	}
+
+	files := r.MultipartForm.File["files"]
+	url := fmt.Sprintf("https://discord.com/api/v9/channels/%s/attachments", c.options.ChannelId)
+	file := make([]File, 0)
+	for index, handler := range files {
+		file = append(file, File{
+			Filename: handler.Filename,
+			FileSize: handler.Size,
+			Id:       index + 1,
+		})
+	}
+	body, _ := json.Marshal(Files{Files: file})
+	fmt.Println(string(body))
+
+	statusCode, b, err := c.DoHTTPRequest(http.MethodPost, url, body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(statusCode)
+	fmt.Println(string(b))
+	var attach Attachments
+	err = json.Unmarshal(b, &attach)
+	if err != nil {
+		return err
+	}
+	for _, f := range attach.Attachments {
+		statusCode, b, err := c.DoHTTPRequest(http.MethodPut, f.UploadUrl, nil)
+		if err != nil {
+			return err
+		}
+		fmt.Println(statusCode)
+		fmt.Println(string(b))
+	}
+	// TODO
+	return nil
 }
 
 // DoHTTPRequest makes a generic HTTP request and returns the response body as a string.
-func (c *BotClient) DoHTTPRequest(data []byte) (int, []byte, error) {
+func (c *BotClient) DoHTTPRequest(method string, url string, data []byte) (int, []byte, error) {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("POST", baseURL, strings.NewReader(string(data)))
+	req, err := http.NewRequest(method, url, strings.NewReader(string(data)))
 	if err != nil {
 		return 0, nil, err
 	}
